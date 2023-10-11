@@ -1,3 +1,4 @@
+
 import numpy as np
 import pytest
 import mugrade
@@ -245,6 +246,9 @@ def test_ewise_fn(fn, shape, device):
     _B = np.random.randn(*shape)
     A = nd.array(_A, device=device)
     B = nd.array(_B, device=device)
+    print(A)
+    print(B)
+    print(fn(A, B))
     np.testing.assert_allclose(fn(_A, _B), fn(A, B).numpy(), atol=1e-5, rtol=1e-5)
 
 
@@ -352,6 +356,8 @@ matmul_dims = [
     (72, 73, 74),
     (74, 73, 72),
     (128, 128, 128),
+    (256, 256, 256),
+    (1024, 1024, 1024),
 ]
 
 
