@@ -451,18 +451,24 @@ __global__ void MatmulKernel(const scalar_t* __restrict__ A, const scalar_t* __r
 //    sB[:] = B[i: i + S, blockIdx.x * L, (blockIdx.x + 1) * L];
     __syncthreads();
     for (size_t j = 0; j < S; j++) {
+      #pragma unroll
       for (size_t k = 0; k < VY; k++) a[k] = sA[j][threadIdx.y * VY + k];
+      #pragma unroll
       for (size_t k = 0; k < VX; k++) b[k] = sB[j][threadIdx.x * VX + k];
 //      a[:] = sA[j, threadIdx.y * VY: (threadIdx.y + 1) * VY];
 //      b[:] = sB[j, threadIdx.x * VX: (threadIdx.x + 1) * VX];
+      #pragma unroll
       for (size_t y = 0; y < VY; y++) {
+        #pragma unroll
         for (size_t x = 0; x < VX; x++) {
           c[y][x] += a[y] * b[x];
         }
       }
     }
   }
+  #pragma unroll
   for (size_t y = 0; y < VY; y++) {
+    #pragma unroll
     for (size_t x = 0; x < VX; x++) {
       size_t Cy = base_y * VY + y, Cx = base_x * VX + x;
       if (Cy < M && Cx < P) {
@@ -501,7 +507,7 @@ void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, 
   /// BEGIN SOLUTION
   CudaDims dim;
   dim.block = dim3(MM_BLOCKDIM_X, MM_BLOCKDIM_Y, 1);
-  dim.grid = dim3((M + L - 1) / L, (P + L - 1) / L, 1);
+  dim.grid = dim3((P + L - 1) / L, (M + L - 1) / L, 1);
   MatmulKernel<<<dim.grid, dim.block>>>(a.ptr, b.ptr, out->ptr, M, N, P);
   /// END SOLUTION
 }
